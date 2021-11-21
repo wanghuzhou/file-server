@@ -1,0 +1,16 @@
+appname: test
+db:
+  name:     test
+  user:     root
+  password: 123
+  port:     3306
+
+contacts:
+  - name:  jack
+    email: jack@test.com
+  - name:  tom
+    email: tom@test.com
+
+server:
+  port: 8084
+  baseFilePath: C:/Users/PC/Desktop/tmp/files
