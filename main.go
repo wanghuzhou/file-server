@@ -2,25 +2,22 @@ package main
 
 import (
 	"bytes"
-	"crypto/md5"
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"github.com/jinzhu/configor"
+	_ "github.com/lib/pq"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-	"time"
-
-	_ "github.com/lib/pq"
 )
 
 var (
 	BaseFilePath string
 	ServerPort   string
 	db           *sql.DB
+	conf         Config
 )
 
 func main() {
@@ -38,7 +35,7 @@ func main() {
 // 2.数据库初始化
 func init() {
 	// 配置文件
-	var conf = Config{}
+	conf = Config{}
 	err := configor.Load(&conf, "config.yml")
 	if err != nil {
 		panic(err)
@@ -48,19 +45,11 @@ func init() {
 
 	fmt.Printf("%v \n", conf)
 	// 数据库
-	//connStr := "postgres://postgres:postgres@192.168.122.11/file-server?sslmode=verify-full"
-	connStr := "postgres://postgres:postgres@192.168.122.11/file-server?sslmode=disable"
-	db, err = sql.Open("postgres", connStr)
-
-	id := 4
-	var hash string
-	err = db.QueryRow("SELECT hash FROM file where id=$1", id).Scan(&hash)
-
-	var f FileEntity
-	err = db.QueryRow("SELECT * FROM file where id=$1", id).Scan(&f)
-
-	fmt.Println(hash)
-	fmt.Println(f)
+	if conf.DB.Use {
+		//connStr := "postgres://postgres:postgres@192.168.122.11/file-server?sslmode=disable"
+		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", conf.DB.User, conf.DB.Password, conf.DB.Host, conf.DB.Port, conf.DB.Name)
+		db, err = sql.Open("postgres", connStr)
+	}
 
 }
 
@@ -109,7 +98,20 @@ func handleUpload(w http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	_, _ = io.WriteString(w, "Upload success: "+newFile.Name())
+	fileEntity := FileEntity{
+		Hash: md5str,
+		Path: newFile.Name(),
+	}
+	insertFile(fileEntity)
+	m := make(map[string]string)
+	m["hash"] = md5str
+	m["url"] = "http://localhost:8084/download?filename=" + md5str + fileHeader.Filename
+
+	resultStr := success(m)
+	//resultStr := success(newFile.Name())
+	//resultStr := success(uploadVO)
+
+	_, _ = io.WriteString(w, resultStr)
 }
 
 func handleDownload(w http.ResponseWriter, request *http.Request) {
@@ -138,7 +140,7 @@ func handleDownload(w http.ResponseWriter, request *http.Request) {
 	defer file.Close()
 
 	//设置响应的header头
-	if strings.Contains(filename, "png") {
+	if strings.Contains(filename, "png") || strings.Contains(filename, "jpg") {
 		w.Header().Add("Content-type", "image/png")
 	} else {
 		w.Header().Add("Content-type", "application/octet-stream")
@@ -151,40 +153,4 @@ func handleDownload(w http.ResponseWriter, request *http.Request) {
 		_, _ = io.WriteString(w, "Bad request")
 		return
 	}
-}
-
-func md5Str(byte []byte) string {
-	h := md5.New()
-	h.Write(byte)
-	return hex.EncodeToString(h.Sum(nil))
-}
-
-type Config struct {
-	APPName string `default:"file-server"`
-	DB      struct {
-		Name     string
-		User     string `default:"root"`
-		Password string `required:"true" env:"DBPassword"`
-		Port     uint   `default:"3306"`
-	}
-	Contacts []struct {
-		Name  string
-		Email string `required:"true"`
-	}
-
-	Server struct {
-		Port         string `default:"8080"`
-		BaseFilePath string `default:"C:/Users/PC/Desktop/tmp/files"`
-	}
-}
-
-type FileEntity struct {
-	Id         int64 `col:"id" json:"id"`
-	Hash       string
-	Path       string
-	Name       string `col:"name" json:"name"`
-	Suffix     string
-	Status     bool
-	CreateTime time.Time
-	UpdateTime time.Time
 }
