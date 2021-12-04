@@ -19,7 +19,7 @@ type Config struct {
 
 	Server struct {
 		Port         string `default:"8080"`
-		BaseFilePath string `default:"C:/Users/PC/Desktop/tmp/files" yaml:"baseFilePath"`
+		BaseFilePath string `default:"./tmp" yaml:"baseFilePath"`
 	}
 }
 
