@@ -19,8 +19,10 @@ type Config struct {
 
 	Server struct {
 		Port         string `default:"8080"`
+		Host         string `default:"localhost"`
 		BaseFilePath string `default:"./tmp" yaml:"baseFilePath"`
 	}
+	ImageExt string `default:"" yaml:"imageExt"`
 }
 
 type FileEntity struct {
@@ -34,16 +36,13 @@ type FileEntity struct {
 	UpdateTime time.Time
 }
 
-type Object struct{}
-
 type UploadVO struct {
-	Object
 	Hash string
 	Url  string
 }
 
 type ResultDTO struct {
-	Code int32 `json:"code"`
-	Msg  string
-	Data interface{}
+	Code int32       `json:"code"`
+	Msg  string      `json:"msg"`
+	Data interface{} `json:"data"`
 }

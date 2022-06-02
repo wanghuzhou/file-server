@@ -10,14 +10,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 )
 
 var (
 	BaseFilePath string
 	ServerPort   string
+	Host         string
 	db           *sql.DB
 	conf         Config
+	imageExt     string
 )
 
 func main() {
@@ -42,6 +45,8 @@ func init() {
 	}
 	BaseFilePath = conf.Server.BaseFilePath
 	ServerPort = ":" + conf.Server.Port
+	Host = conf.Server.Host
+	imageExt = conf.ImageExt
 
 	fmt.Printf("%v \n", conf)
 	// 数据库
@@ -105,17 +110,13 @@ func handleUpload(w http.ResponseWriter, request *http.Request) {
 	insertFile(fileEntity)
 	m := make(map[string]string)
 	m["hash"] = md5str
-	m["url"] = "http://localhost:8084/download?filename=" + md5str + fileHeader.Filename
+	m["url"] = "http://" + Host + ServerPort + "/download?filename=" + md5str + fileHeader.Filename
 
-	resultStr := success(m)
-	//resultStr := success(newFile.Name())
-	//resultStr := success(uploadVO)
-
-	_, _ = io.WriteString(w, resultStr)
+	_, _ = io.WriteString(w, success(m))
 }
 
 func handleDownload(w http.ResponseWriter, request *http.Request) {
-	//文件上传只允许GET方法
+	//文件下载只允许GET方法
 	if request.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		_, _ = w.Write([]byte("Method not allowed"))
@@ -140,7 +141,8 @@ func handleDownload(w http.ResponseWriter, request *http.Request) {
 	defer file.Close()
 
 	//设置响应的header头
-	if strings.Contains(filename, "png") || strings.Contains(filename, "jpg") {
+	fileType := path.Ext(filename)
+	if strings.Contains(imageExt, fileType) {
 		w.Header().Add("Content-type", "image/png")
 	} else {
 		w.Header().Add("Content-type", "application/octet-stream")

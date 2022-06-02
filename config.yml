@@ -3,7 +3,7 @@ db:
   name:     test
   user:     postgres
   password: postgres
-  host:     localhost
+  host:     172.23.1.2
   port:     5432
   use:      true
 
@@ -15,4 +15,7 @@ contacts:
 
 server:
   port: 8084
-  baseFilePath: C:/Users/PC/Desktop/tmp/files
+  host: localhost
+  baseFilePath: C:/Users/dell/Desktop/tmp
+
+imageExt: .jpg.jpeg.png.webp.gif
