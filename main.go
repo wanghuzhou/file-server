@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/jinzhu/configor"
 	_ "github.com/lib/pq"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"io"
 	"log"
 	"net/http"
@@ -21,12 +24,14 @@ var (
 	db           *sql.DB
 	conf         Config
 	imageExt     string
+	minioClient  *minio.Client
 )
 
 func main() {
 
 	http.HandleFunc("/upload", handleUpload)
 	http.HandleFunc("/download", handleDownload)
+	http.HandleFunc("/s3/upload", handleUploadMinIO)
 
 	err := http.ListenAndServe(ServerPort, nil)
 	if err != nil {
@@ -49,8 +54,16 @@ func init() {
 	imageExt = conf.ImageExt
 
 	fmt.Printf("%v \n", conf)
+
+	if conf.Minio.Enable {
+		minioClient, err = minio.New(conf.Minio.Endpoint, &minio.Options{
+			Creds:  credentials.NewStaticV4(conf.Minio.AccessKey, conf.Minio.SecretKey, ""),
+			Secure: conf.Minio.useSSL,
+		})
+	}
+
 	// 数据库
-	if conf.DB.Use {
+	if conf.DB.Enable {
 		//connStr := "postgres://postgres:postgres@192.168.122.11/file-server?sslmode=disable"
 		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", conf.DB.User, conf.DB.Password, conf.DB.Host, conf.DB.Port, conf.DB.Name)
 		db, err = sql.Open("postgres", connStr)
@@ -155,4 +168,40 @@ func handleDownload(w http.ResponseWriter, request *http.Request) {
 		_, _ = io.WriteString(w, "Bad request")
 		return
 	}
+}
+
+func handleUploadMinIO(w http.ResponseWriter, request *http.Request) {
+
+	fmt.Println("path", request.URL.Path)
+	fmt.Println("scheme", request.URL.Scheme)
+	fmt.Println(request.Form["url_long"])
+
+	//文件上传只允许PUT方法
+	if request.Method != http.MethodPut {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		_, _ = w.Write([]byte("Method not allowed"))
+		return
+	}
+
+	//从表单中读取文件
+	file, fileHeader, err := request.FormFile("file")
+	if err != nil {
+		_, _ = io.WriteString(w, "Read file error")
+		return
+	}
+
+	contentType := "application/octet-stream"
+	_, err = minioClient.PutObject(context.Background(), "image", "21312.jpg", file, fileHeader.Size, minio.PutObjectOptions{ContentType: contentType})
+	if err != nil {
+		_, _ = io.WriteString(w, err.Error())
+		return
+	}
+	//defer 结束时关闭文件
+	defer file.Close()
+	log.Println("filename: " + fileHeader.Filename)
+
+	m := make(map[string]string)
+	m["url"] = conf.Minio.Endpoint + "/image/" + fileHeader.Filename
+
+	_, _ = io.WriteString(w, success(m))
 }

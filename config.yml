@@ -18,4 +18,11 @@ server:
   host: localhost
   baseFilePath: C:/Users/dell/Desktop/tmp
 
+minio:
+  endpoint: 172.23.1.2:9000
+  accessKey:
+  secretKey:
+  useSSL: false
+  enable: true
+
 imageExt: .jpg.jpeg.png.webp.gif

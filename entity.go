@@ -10,7 +10,7 @@ type Config struct {
 		Password string `required:"true" env:"DBPassword"`
 		Host     string `default:"localhost"`
 		Port     uint   `default:"5432"`
-		Use      bool   `default:"true"`
+		Enable   bool   `default:"true"`
 	}
 	Contacts []struct {
 		Name  string
@@ -21,6 +21,14 @@ type Config struct {
 		Port         string `default:"8080"`
 		Host         string `default:"localhost"`
 		BaseFilePath string `default:"./tmp" yaml:"baseFilePath"`
+	}
+
+	Minio struct {
+		Endpoint  string `default:""`
+		AccessKey string `default:""`
+		SecretKey string `default:""`
+		useSSL    bool   `default:"true"`
+		Enable    bool   `default:"true"`
 	}
 	ImageExt string `default:"" yaml:"imageExt"`
 }

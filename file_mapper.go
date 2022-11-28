@@ -6,7 +6,7 @@ import (
 
 func insertFile(file FileEntity) {
 
-	if !conf.DB.Use {
+	if !conf.DB.Enable {
 		return
 	}
 
