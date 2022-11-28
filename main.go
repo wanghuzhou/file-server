@@ -189,19 +189,25 @@ func handleUploadMinIO(w http.ResponseWriter, request *http.Request) {
 		_, _ = io.WriteString(w, "Read file error")
 		return
 	}
-
-	contentType := "application/octet-stream"
-	_, err = minioClient.PutObject(context.Background(), "image", "21312.jpg", file, fileHeader.Size, minio.PutObjectOptions{ContentType: contentType})
+	var contentType string
+	fileName := fileHeader.Filename
+	fileType := path.Ext(fileName)
+	if strings.Contains(imageExt, fileType) {
+		contentType = "image/jpg"
+	} else {
+		contentType = "application/octet-stream"
+	}
+	_, err = minioClient.PutObject(context.Background(), "image", fileName, file, fileHeader.Size, minio.PutObjectOptions{ContentType: contentType})
 	if err != nil {
 		_, _ = io.WriteString(w, err.Error())
 		return
 	}
 	//defer 结束时关闭文件
 	defer file.Close()
-	log.Println("filename: " + fileHeader.Filename)
+	log.Println("filename: " + fileName)
 
 	m := make(map[string]string)
-	m["url"] = conf.Minio.Endpoint + "/image/" + fileHeader.Filename
+	m["url"] = conf.Minio.Endpoint + "/image/" + fileName
 
 	_, _ = io.WriteString(w, success(m))
 }
