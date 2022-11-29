@@ -1,6 +1,6 @@
 module FileServer
 
-go 1.17
+go 1.19
 
 require (
 	github.com/jinzhu/configor v1.2.1
