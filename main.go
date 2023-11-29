@@ -57,8 +57,8 @@ func init() {
 
 	if conf.Minio.Enable {
 		minioClient, err = minio.New(conf.Minio.Endpoint, &minio.Options{
-			Creds:  credentials.NewStaticV4(conf.Minio.AccessKey, conf.Minio.SecretKey, ""),
-			Secure: conf.Minio.useSSL,
+			Creds:  credentials.NewStaticV4(conf.Minio.Id, conf.Minio.Secret, ""),
+			Secure: conf.Minio.Secure,
 		})
 	}
 

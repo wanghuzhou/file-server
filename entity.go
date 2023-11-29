@@ -24,11 +24,11 @@ type Config struct {
 	}
 
 	Minio struct {
-		Endpoint  string `default:""`
-		AccessKey string `default:""`
-		SecretKey string `default:""`
-		useSSL    bool   `default:"true"`
-		Enable    bool   `default:"true"`
+		Endpoint string `default:""`
+		Id       string `default:""`
+		Secret   string `default:""`
+		Secure   bool   `default:"true"`
+		Enable   bool   `default:"true"`
 	}
 	ImageExt string `default:"" yaml:"imageExt"`
 }

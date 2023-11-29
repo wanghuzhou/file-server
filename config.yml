@@ -5,7 +5,7 @@ db:
   password: postgres
   host:     172.23.1.2
   port:     5432
-  use:      true
+  use:      false
 
 contacts:
   - name:  jack
@@ -19,10 +19,10 @@ server:
   baseFilePath: C:/Users/dell/Desktop/tmp
 
 minio:
-  endpoint: 172.23.1.2:9000
-  accessKey:
-  secretKey:
-  useSSL: false
+  endpoint: play.min.io
+  id: Q3AM3UQ867SPQQA43P2F
+  secret: zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
+  secure: true
   enable: true
 
 imageExt: .jpg.jpeg.png.webp.gif
