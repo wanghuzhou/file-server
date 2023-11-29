@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/jinzhu/configor"
 	_ "github.com/lib/pq"
 	"github.com/minio/minio-go/v7"
@@ -15,6 +16,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 )
 
 var (
@@ -32,6 +34,7 @@ func main() {
 	http.HandleFunc("/upload", handleUpload)
 	http.HandleFunc("/download", handleDownload)
 	http.HandleFunc("/s3/upload", handleUploadMinIO)
+	http.HandleFunc("/s3/getPreSignedPutUrl", getPreSignedPutUrl)
 
 	err := http.ListenAndServe(ServerPort, nil)
 	if err != nil {
@@ -210,4 +213,14 @@ func handleUploadMinIO(w http.ResponseWriter, request *http.Request) {
 	m["url"] = conf.Minio.Endpoint + "/image/" + fileName
 
 	_, _ = io.WriteString(w, success(m))
+}
+
+// 预签名上传文件url
+func getPreSignedPutUrl(w http.ResponseWriter, request *http.Request) {
+	client, err := minioClient.PresignedPutObject(context.Background(), "image", uuid.New().String(), 1*time.Minute)
+	if err != nil {
+		_, _ = io.WriteString(w, "Read file error")
+		return
+	}
+	_, _ = io.WriteString(w, success(client.String()))
 }

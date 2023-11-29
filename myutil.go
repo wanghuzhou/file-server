@@ -18,11 +18,11 @@ func md5Str(byte []byte) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func success(s map[string]string) string {
+func success(data interface{}) string {
 	result := ResultDTO{
 		Code: 0,
 		Msg:  "",
-		Data: s,
+		Data: data,
 	}
 	str, err := json.Marshal(result)
 	checkErr(err)
