@@ -34,3 +34,9 @@ func toJsonString(v interface{}) string {
 	checkErr(err)
 	return string(str)
 }
+
+func toJsonStringIndent(v interface{}) string {
+	str, err := json.MarshalIndent(v, "", "  ")
+	checkErr(err)
+	return string(str)
+}

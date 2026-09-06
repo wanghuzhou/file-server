@@ -5,7 +5,7 @@ db:
   password: postgres
   host:     172.23.1.2
   port:     5432
-  use:      false
+  enable:   false
 
 contacts:
   - name:  jack
@@ -16,7 +16,7 @@ contacts:
 server:
   port: 8084
   host: localhost
-  baseFilePath: ~/Desktop/tmp
+  baseFilePath: C:/Users/PC/Desktop/tmp
 
 minio:
   endpoint: play.min.io

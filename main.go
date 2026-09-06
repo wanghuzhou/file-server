@@ -56,7 +56,8 @@ func init() {
 	Host = conf.Server.Host
 	imageExt = conf.ImageExt
 
-	fmt.Printf("%v \n", conf)
+	//fmt.Printf("%v \n", conf)
+	fmt.Printf("%v \n", toJsonStringIndent(conf))
 
 	if conf.Minio.Enable {
 		minioClient, err = minio.New(conf.Minio.Endpoint, &minio.Options{
