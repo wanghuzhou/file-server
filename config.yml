@@ -16,7 +16,7 @@ contacts:
 server:
   port: 8084
   host: localhost
-  baseFilePath: C:/Users/dell/Desktop/tmp
+  baseFilePath: ~/Desktop/tmp
 
 minio:
   endpoint: play.min.io
